@@ -1,0 +1,35 @@
+# Pipeline steps list
+cache:
+  key: $CI_COMMIT_REF_SLUG # only apply for current branch
+  paths:
+    - node_modules/
+  policy: pull-push
+
+stages:
+  - install
+  - build
+  - deploy
+
+.Tags: &tags
+  - moonlab-runner
+
+.deployBranch: &deployBranch
+  - develop
+  - production
+
+installation:
+  stage: install
+  image:
+    name: ductn4/ci-node-gitops
+  script:
+    - npm install
+  tags: *tags
+  only: *deployBranch
+
+include:
+  - local: "/.gitlab/ci_templates/deploy_dev_jobs.yml"
+    rules:
+      - if: $CI_COMMIT_BRANCH == "develop"
+  - local: "/.gitlab/ci_templates/deploy_prod_jobs.yml"
+    rules:
+      - if: $CI_COMMIT_BRANCH == "production"
