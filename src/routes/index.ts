@@ -3,4 +3,8 @@ export * from "./user.route"
 export * from "./common.route"
 export * from "./currency.route"
 export * from "./withdrawal.route"
+export * from "./track.route"
+export * from "./playlist.route"
+export * from "./album.route"
+export * from "./artist.route"
 

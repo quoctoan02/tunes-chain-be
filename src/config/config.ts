@@ -50,4 +50,9 @@ export const config = {
         secret_key: process.env.AMZ_S3_SECRET_KEY,
         region: process.env.AMZ_S3_REGION,
     },
+    cloudinary: {
+        cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+        api_key: process.env.CLOUDINARY_API_KEY,
+        api_secret: process.env.CLOUDINARY_API_SECRET
+    }
 };

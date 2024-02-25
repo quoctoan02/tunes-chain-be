@@ -5,6 +5,7 @@ import {config} from "../config"
 import {logger} from "../utils";
 import {BalanceRoute} from "../routes/balance.route";
 import {AuthRoute, CommonRoute, CurrencyRoute, UserRoute, WithdrawalRoute,} from "../routes";
+import {SongRoute} from "../routes/song.route";
 
 // --- Setup router
 const setupRouter = (app: Application) => {
@@ -14,6 +15,7 @@ const setupRouter = (app: Application) => {
     CurrencyRoute(app)
     UserRoute(app)
     WithdrawalRoute(app)
+    SongRoute(app)
 };
 
 const startServe = async () => {

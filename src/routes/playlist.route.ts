@@ -12,9 +12,9 @@ const getList = async (req: any, res: any) => {
     routeResSuccess(res, []);
 };
 
-export const RouteName = (app: Application) => {
+export const PlaylistRoute = (app: Application) => {
     const routerName = Router()
-    app.use("/history", routerName)
+    app.use("/playlist", routerName)
     // Children
     routerName.get("/list", hpr(getList));
 }
