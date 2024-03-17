@@ -1,9 +1,9 @@
 import {doQuery} from "../databases";
 
-const table = `artists`;
+const table = `spotify_artists`;
 
 export const ArtistModel = {
-    create: async (data: any, conn: any) => {
+    create: async (data: any, conn?: any) => {
         return doQuery.insertRow(table, data, conn);
     },
 
