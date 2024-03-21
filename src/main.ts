@@ -10,7 +10,7 @@ const main = async () => {
     switch (runService) {
         default:
             await ApiService.startServe();
-            await CrawlService.startServe();
+            await CrawlService.playlist();
             break;
     }
 }

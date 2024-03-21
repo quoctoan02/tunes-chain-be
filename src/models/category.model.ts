@@ -1,12 +1,16 @@
-import {doQuery} from "../databases";
+import {doQuery, sql} from "../databases";
 
-const table = `spotify_playlists`;
+const table = `spotify_categories`;
 
-export const PlaylistModel = {
+export const CategoryModel = {
     create: async (data: any, conn?: any) => {
         return doQuery.insertRow(table, data, conn);
     },
-
+    listAll: async () => {
+        let query = `select * from ${table}`
+        let [result] = await sql.query(query)
+        return result;
+    },
     getByType: async (type: string, value: any) => {
         return doQuery.getByType(table, type, value);
     },

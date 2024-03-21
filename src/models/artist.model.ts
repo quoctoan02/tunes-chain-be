@@ -1,4 +1,4 @@
-import {doQuery} from "../databases";
+import {doQuery, sql} from "../databases";
 
 const table = `spotify_artists`;
 
@@ -17,6 +17,11 @@ export const ArtistModel = {
 
     get: async (id: number) => {
         return doQuery.getById(table, id);
+    },
+    listAll: async () => {
+        let query = `select * from ${table}`
+        let [result] = await sql.query(query)
+        return result;
     },
 
     list: async (data: any) => {
