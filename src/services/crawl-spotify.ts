@@ -7,21 +7,29 @@ import {ArtistModel} from "../models/artist.model";
 import {AlbumModel} from "../models/album.model";
 import {PlaylistModel} from "../models/playlist.model";
 import {CategoryModel} from "../models/category.model";
+import {SpotifyArtistModel} from "../models/spotify-artist.model";
+import {SpotifyCategoryModel} from "../models/spotify-category.model";
+import {SpotifyAlbumModel} from "../models/spotify_album.model";
+import {AlbumArtistModel} from "../models/album-artist.model";
 
 
 const startServe = async () => {
     try {
-        const res = await callSpotifyApi("/me/following?type=artist", "GET", {limit: 50})
-        console.log(res)
-        for (let artist of res?.artists?.items) {
+        // const res = await callSpotifyApi("/me/following?type=artist", "GET", {limit: 50})
+        const res = await SpotifyArtistModel.listAll()
+        for (let artist of res) {
             console.log(artist)
-            await ArtistModel.create({id: artist.id, data: JSON.stringify(artist)})
+            await ArtistModel.create({
+                name: artist.data.name,
+                avatar: artist.data.images[0].url,
+                genres: JSON.stringify(artist.data.genres)
+            })
         }
 
     } catch (e) {
         logger.error(e);
     } finally {
-        setTimeout(startServe, 3000)
+        // setTimeout(startServe, 3000)
     }
 };
 
@@ -29,13 +37,23 @@ const album = async () => {
     try {
         const artists = await ArtistModel.listAll()
         for (let artist of artists) {
-            const res = await callSpotifyApi(`/artists/${artist.id}/albums`, "GET", {limit: 10})
-            console.log(res)
-
-            for (let album of res?.items) {
+            //     const res = await callSpotifyApi(`/artists/${artist.id}/albums`, "GET", {limit: 10})
+            const res = await SpotifyAlbumModel.listAll()
+            for (let album of res) {
                 console.log(album)
-                await AlbumModel.create({id: album.id, data: JSON.stringify(album)}).catch((e) => {
+                const album_id = await AlbumModel.create({
+                    name: album.data.name,
+                    image: album.data.images[0].url,
+                    total_songs: album.data.total_tracks,
+                    release_date: album.data.release_date
                 })
+                //    await AlbumModel.create({id: album.id, data: JSON.stringify(album)}).catch((e) => {})
+                for (let artist of album?.data.artists) {
+                    const artistInfo = await ArtistModel.getByType("name", artist.name)
+                    await AlbumArtistModel.create({album_id: album_id, artist_id: artistInfo.id})
+                }
+
+
             }
         }
 
@@ -62,7 +80,7 @@ const playlist = async () => {
         logger.error(e);
     } finally {
         playlistOffset += 50
-       // setTimeout(playlist, 3000)
+        // setTimeout(playlist, 3000)
 
     }
 };
@@ -70,19 +88,19 @@ const playlist = async () => {
 
 const category = async () => {
     try {
-        const res = await callSpotifyApi(`/browse/categories`, "GET", {limit: 50})
+        // const res = await callSpotifyApi(`/browse/categories`, "GET", {limit: 50})
+        const res = await SpotifyCategoryModel.listAll()
 
-        for (let playlist of res?.categories?.items) {
-            console.log(playlist)
-            await CategoryModel.create({id: playlist.id, data: JSON.stringify(playlist)}).catch((e) => {
-            })
+        for (let playlist of res) {
+            // await CategoryModel.create({id: playlist.id, data: JSON.stringify(playlist)}).catch((e) => {
+            await CategoryModel.create({name: playlist.data.name, icon_url: playlist.data.icons[0].url})
         }
 
     } catch (e) {
         logger.error(e);
     } finally {
         playlistOffset += 50
-       // setTimeout(playlist, 3000)
+        // setTimeout(playlist, 3000)
 
     }
 };

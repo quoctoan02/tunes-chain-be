@@ -99,9 +99,12 @@ const uploadImage = async (req: any, res: any) => {
 };
 
 const uploadToCloudinary = (req: any, res: any) => {
+    console.log("--> (upload.route.ts:133) ~ req:", req);
+
     let {
         fieldname, originalname, mimetype, encoding
     } = req.file
+    console.log("--> (upload.route.ts:105) ~ req.file:", req.file);
 
     console.log(fieldname, originalname, mimetype, encoding)
     const params: UploadApiOptions = {
@@ -129,6 +132,11 @@ const uploadToCloudinary = (req: any, res: any) => {
     })
     result.end(req.file.buffer)
 }
+// const checkRequest = (req: any, res: any, next: any) => {
+//     console.log(Object.keys(req.bo))
+//     console.log(req)
+//     next()
+// }
 
 
 export const UploadRoute = (app: Application) => {

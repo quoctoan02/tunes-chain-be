@@ -1,12 +1,16 @@
 import {doQuery, sql} from "../databases";
 
-const table = `artists`;
+const table = `spotify_categories`;
 
-export const ArtistModel = {
+export const SpotifyCategoryModel = {
     create: async (data: any, conn?: any) => {
         return doQuery.insertRow(table, data, conn);
     },
-
+    listAll: async () => {
+        let query = `select * from ${table}`
+        let [result] = await sql.query(query)
+        return result;
+    },
     getByType: async (type: string, value: any) => {
         return doQuery.getByType(table, type, value);
     },
@@ -17,11 +21,6 @@ export const ArtistModel = {
 
     get: async (id: number) => {
         return doQuery.getById(table, id);
-    },
-    listAll: async () => {
-        let query = `select * from ${table}`
-        let [result] = await sql.query(query)
-        return result;
     },
 
     list: async (data: any) => {

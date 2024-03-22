@@ -1,6 +1,6 @@
 import {doQuery, sql} from "../databases";
 
-const table = `spotify_categories`;
+const table = `categories`;
 
 export const CategoryModel = {
     create: async (data: any, conn?: any) => {

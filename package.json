@@ -1,5 +1,5 @@
 {
-  "name": "template-api",
+  "name": "tunes-chain",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -66,6 +66,6 @@
     "serve": "node build/src/main.js",
     "lint": "tslint --fix -c ./tslint.json src/**/*{.ts,.tsx}"
   },
-  "author": "HieuTV",
+  "author": "Toan Phung Quoc",
   "license": "ISC"
 }
