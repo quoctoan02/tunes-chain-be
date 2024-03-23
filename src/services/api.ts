@@ -4,9 +4,19 @@ import {applyMiddleware} from "../middlewares"
 import {config} from "../config"
 import {logger} from "../utils";
 import {BalanceRoute} from "../routes/balance.route";
-import {AuthRoute, CommonRoute, CurrencyRoute, UserRoute, WithdrawalRoute,} from "../routes";
+import {
+    AlbumRoute,
+    ArtistRoute,
+    AuthRoute,
+    CommonRoute,
+    CurrencyRoute,
+    PlaylistRoute,
+    UserRoute,
+    WithdrawalRoute,
+} from "../routes";
 import {SongRoute} from "../routes/song.route";
 import {UploadRoute} from "../routes/upload.route";
+import {UserLibraryRoute} from "../routes/user-library.route";
 
 // --- Setup router
 const setupRouter = (app: Application) => {
@@ -18,6 +28,10 @@ const setupRouter = (app: Application) => {
     WithdrawalRoute(app)
     SongRoute(app)
     UploadRoute(app)
+    ArtistRoute(app)
+    AlbumRoute(app)
+    PlaylistRoute(app)
+    UserLibraryRoute(app)
 };
 
 const startServe = async () => {

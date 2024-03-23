@@ -9,8 +9,8 @@ const main = async () => {
     logger.info("Running service: ", runService);
     switch (runService) {
         default:
-            await ApiService.startServe();
-            await CrawlService.album();
+             await ApiService.startServe();
+           //  await CrawlService.album();
             break;
     }
 }

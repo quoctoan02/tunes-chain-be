@@ -1,12 +1,13 @@
-import {ArtistModel} from "../models/artist.model";
+import {AlbumModel} from "../models/album.model";
 
-export class ArtistController {
+
+export class AlbumController {
     public static async create(data: any) {
 
     }
 
     public static async list() {
-        return ArtistModel.listAll()
+        return AlbumModel.listAll()
     }
 
     public static async fname() {

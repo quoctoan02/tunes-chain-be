@@ -1,15 +1,14 @@
 import {Application, Router} from "express"
 import {hpr, routeResSuccess, Utils} from "../utils"
 import Joi from "joi"
+import {ArtistController} from "../controllers/artist.controller";
 
 const getList = async (req: any, res: any) => {
     const reqData = await Joi.object()
         .keys({
-            ...Utils.baseFilter,
-            address: Joi.string().required(),
         })
         .validateAsync({...req.query, ...req.params, ...req.body});
-    routeResSuccess(res, []);
+    routeResSuccess(res, await ArtistController.list());
 };
 const create = async (req: any, res: any) => {
     const reqData = await Joi.object()
@@ -17,6 +16,7 @@ const create = async (req: any, res: any) => {
             name: Joi.string().required(),
             avatar: Joi.string().required(),
             background: Joi.string().required(),
+            genres: Joi.array().items(Joi.string()).required()
         })
         .validateAsync({...req.query, ...req.params, ...req.body});
     routeResSuccess(res, []);

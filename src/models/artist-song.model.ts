@@ -1,8 +1,8 @@
 import {doQuery, sql} from "../databases";
 
-const table = `album_artists`;
+const table = `artist_songs`;
 
-export const AlbumArtistModel = {
+export const ArtistSongModel = {
     create: async (data: any, conn?: any) => {
         return doQuery.insertRow(table, data, conn);
     },

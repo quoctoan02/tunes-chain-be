@@ -7,7 +7,7 @@ export const AlbumModel = {
         return doQuery.insertRow(table, data, conn);
     },
     listAll: async () => {
-        let query = `select * from ${table}`
+        let query = `select * from ${table} limit 15`
         let [result] = await sql.query(query)
         return result;
     },

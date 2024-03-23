@@ -1,15 +1,15 @@
 import {Application, Router} from "express"
 import {hpr, routeResSuccess, Utils} from "../utils"
 import Joi from "joi"
+import {AlbumController} from "../controllers/album.controller";
 
 const getList = async (req: any, res: any) => {
     const reqData = await Joi.object()
         .keys({
             ...Utils.baseFilter,
-            address: Joi.string().required(),
         })
         .validateAsync({...req.query, ...req.params, ...req.body});
-    routeResSuccess(res, []);
+    routeResSuccess(res, await AlbumController.list());
 };
 const create = async (req: any, res: any) => {
     const reqData = await Joi.object()

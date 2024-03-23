@@ -10,7 +10,7 @@ import {CategoryModel} from "../models/category.model";
 import {SpotifyArtistModel} from "../models/spotify-artist.model";
 import {SpotifyCategoryModel} from "../models/spotify-category.model";
 import {SpotifyAlbumModel} from "../models/spotify_album.model";
-import {AlbumArtistModel} from "../models/album-artist.model";
+import {ArtistSongModel} from "../models/artist-song.model";
 
 
 const startServe = async () => {
@@ -35,27 +35,30 @@ const startServe = async () => {
 
 const album = async () => {
     try {
-        const artists = await ArtistModel.listAll()
-        for (let artist of artists) {
+        // const artists = await ArtistModel.listAll()
+        // for (let artist of artists) {
             //     const res = await callSpotifyApi(`/artists/${artist.id}/albums`, "GET", {limit: 10})
             const res = await SpotifyAlbumModel.listAll()
             for (let album of res) {
                 console.log(album)
+                     const artistInfo = await ArtistModel.getByType("name", album?.data.artists[0].name)
                 const album_id = await AlbumModel.create({
                     name: album.data.name,
                     image: album.data.images[0].url,
                     total_songs: album.data.total_tracks,
-                    release_date: album.data.release_date
+                    release_date: album.data.release_date,
+                    artist_name: album?.data.artists[0].name,
+                    artist_id: (artistInfo && artistInfo?.id) || null
                 })
                 //    await AlbumModel.create({id: album.id, data: JSON.stringify(album)}).catch((e) => {})
-                for (let artist of album?.data.artists) {
-                    const artistInfo = await ArtistModel.getByType("name", artist.name)
-                    await AlbumArtistModel.create({album_id: album_id, artist_id: artistInfo.id})
-                }
+                // for (let artist of album?.data.artists) {
+                //     const artistInfo = await ArtistModel.getByType("name", artist.name)
+                //     await AlbumArtistModel.create({album_id: album_id, artist_id: artistInfo.id})
+                // }
 
 
             }
-        }
+        //}
 
     } catch (e) {
         logger.error(e);

@@ -110,7 +110,7 @@ const validateCryptoAddress = (address: string, coinType: string, env: string = 
 
 const baseFilter = {
     status: Joi.number().integer(),
-    limit: Joi.number().integer(),
+    limit: Joi.number().integer().default(10),
     offset: Joi.number().integer(),
     order_by: Joi.string().default('updated_time'),
     reverse: Joi.boolean().default(true),
