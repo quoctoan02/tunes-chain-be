@@ -1,11 +1,10 @@
-import {doQuery} from "../databases";
-import {Utils} from "../utils";
+import {doQuery, sql} from "../databases";
 
-const table = `songs`;
+const table = `spotify_songs`;
 
-export const SongModel = {
+export const SpotifySongModel = {
     create: async (data: any, conn?: any) => {
-        return doQuery.insertRow(table, Utils.pickBy(data), conn);
+        return doQuery.insertRow(table, data, conn);
     },
 
     getByType: async (type: string, value: any) => {
@@ -15,7 +14,11 @@ export const SongModel = {
     update: async (data: any, conn?: any) => {
         return doQuery.updateRow(table, data, data.id, conn);
     },
-
+    listAll: async (offset: number) => {
+        let query = `select * from ${table} limit 10 offset ${offset}`
+        let [result] = await sql.query(query)
+        return result;
+    },
     get: async (id: number) => {
         return doQuery.getById(table, id);
     },

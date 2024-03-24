@@ -7,7 +7,7 @@ export const SpotifyAlbumModel = {
         return doQuery.insertRow(table, data, conn);
     },
     listAll: async () => {
-        let query = `select * from ${table}`
+        let query = `select * from ${table} limit 100`
         let [result] = await sql.query(query)
         return result;
     },

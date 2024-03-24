@@ -18,9 +18,8 @@ export const UserReferralModel = {
         let query = `select address,
        u.id as id,
        u.updated_time,
-       u.username,
        u.email,
-       u.full_name,
+       u.name,
        coalesce((select count(*) from user_referral ur2 where ur2.parent_id = ur.user_id), 0 ) as count_child
 from user_referral ur
          left join users u on ur.user_id = u.id

@@ -9,6 +9,7 @@ export enum ErrorCode {
 
     // User
     USER_INVALID = 1000,
+    USER_EXISTS,
     ADDRESS_EXISTS,
     USER_EMAIL_VERIFIED,
     EMAIL_EXISTS,
@@ -18,6 +19,8 @@ export enum ErrorCode {
     ADDRESS_INVALID,
     EMAIL_ACTIVATED,
     EMAIL_EXIST,
+    USER_NOT_ACTIVE_YET,
+    USER_BANNED,
 
     // collection
     COLLECTION_INVALID = 4001,
@@ -31,6 +34,9 @@ export enum ErrorCode {
 
     // balance
     NOT_ENOUGH_BALANCE,
+
+    //song
+    SONG_EXISTS
 
 }
 
@@ -103,3 +109,7 @@ export enum ConfigKey {
 
 }
 
+export enum UserType {
+    USER = 1,
+    ARTIST
+}

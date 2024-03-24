@@ -38,7 +38,7 @@ export const doQuery = {
                 row[Object.keys(row)[i]] = Object.values(row)[i].join(',');
             }
         }
-        let query = `INSERT INTO ${tableName}(${Object.keys(row).join(',')}) VALUES (${''.padStart((Object.values(row).length * 2) - 1, '?,')})`;
+        let query = `INSERT ignore INTO ${tableName}(${Object.keys(row).join(',')}) VALUES (${''.padStart((Object.values(row).length * 2) - 1, '?,')})`;
         logger.info(query);
         let [result, ignored] = await conn.query(query, Object.values(row));
         return result.insertId;
