@@ -94,8 +94,8 @@ export enum OtpWay {
 }
 
 export enum UserStatus {
-    DEACTIVATED = 1,
-    ACTIVATED,
+    ACTIVATED = 1,
+    DEACTIVATED,
     BANNED,
 }
 

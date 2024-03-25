@@ -1,5 +1,5 @@
 import {UserModel} from "../models";
-import {ErrorCode, logger, OtpType, OtpWay, TokenType, UserStatus, Utils} from "../utils";
+import {ErrorCode, logger, OtpType, TokenType, UserStatus, Utils} from "../utils";
 import {doQuery, Redis, sql} from "../databases";
 import {OTPController} from "./otp.controller";
 import {recoverPersonalSignature} from "eth-sig-util";
@@ -42,7 +42,7 @@ export class AuthController {
 
         return {
             token: auth_token,
-            user_info: await UserModel.getWithAddress(userInfo.id),
+            user_info: await UserModel.getByIdWithAddress(userInfo.id),
             expiredAt: Date.now() + 12 * 60 * 60 * 1000,
         };
     }
@@ -69,7 +69,7 @@ export class AuthController {
 
         return {
             token: auth_token,
-            user_info: await UserModel.getWithAddress(userInfo.id),
+            user_info: await UserModel.getByIdWithAddress(userInfo.id),
             //user_info: await UserController.get(userInfo.id),
             expiredAt: Date.now() + 7 * 24 * 60 * 60 * 1000,
         };
@@ -178,7 +178,7 @@ export class AuthController {
             throw ErrorCode.USER_EXISTS;
 
         // check code
-        await OTPController.verify_otp(OtpType.VERIFY_EMAIL, data.email, data.code, OtpWay.EMAIL);
+        // await OTPController.verify_otp(OtpType.VERIFY_EMAIL, data.email, data.code, OtpWay.EMAIL);
 
         // if ('123456' != data.code)
         //     throw ErrorCode.OTP_INVALID_OR_EXPIRED;
@@ -217,7 +217,8 @@ export class AuthController {
         const userInfo = {
             email: data.email,
             password: data.password,
-            type: data.type
+            type: data.type,
+            name: data.name
         }
         return await UserModel.signup(userInfo);
     };

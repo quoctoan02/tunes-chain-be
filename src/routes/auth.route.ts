@@ -67,7 +67,7 @@ const loginEmail = async (req: Request, res: Response) => {
 
 
     const login_res = await AuthController.loginEmail(email, password);
-
+    console.log(login_res)
     logger.trace("geo", geo);
     const userAgent = ua.getResult();
     const location = geo ? [geo.city, geo.region, geo.country] : []
@@ -179,12 +179,13 @@ const fakeLogin = async (req: Request, res: Response) => {
     return routeResSuccess(res, await AuthController.testLogin(address, referral_code));
 }
 const signup = async (req: Request, res: Response) => {
-    const { email, password, code, type } = await Joi.object()
+    const { email, password, code, type, name } = await Joi.object()
         .keys({
             email: Joi.string().email().required(),
             password: Joi.string().custom(Utils.passwordMethod).required(),
             type: Joi.number().default(1),
-            code: Joi.string().required(),
+         //   code: Joi.string().required(),
+            name: Joi.string().required(),
         })
         .and('email', 'password')
         .validateAsync(req.body)
@@ -193,7 +194,8 @@ const signup = async (req: Request, res: Response) => {
         email,
         password,
         code,
-        type
+        type,
+        name
     })
 
     return routeResSuccess(res, { email, id: newUserId })

@@ -5,13 +5,13 @@ import PasswordValidator from 'password-validator'
 import {ErrorCode, HttpStatus, TokenType} from "./enum";
 import crypto from "crypto";
 import Joi from "joi";
-import { Redis } from "../databases";
+import {Redis} from "../databases";
 
 const CAValidator = require('cryptocurrency-address-validator');
 
 // --- Create password validator schema
 const schema = new PasswordValidator();
-schema.is().min(8).is().max(50).not().spaces();
+schema.is().min(6).is().max(50).not().spaces();
 
 
 const passwordMethod = (val: any, helpers: any) => {

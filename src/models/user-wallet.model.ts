@@ -1,4 +1,3 @@
-import {ErrorCode, logger, MathUtils, Utils} from "../utils";
 import {doQuery, sql} from "../databases";
 
 export enum TransactionType {
@@ -35,7 +34,7 @@ export const UserWalletModel = {
     getAddressesByEmail: async (emails: []) => {
         let query: string = `select uw.address, u.email
                             from users u
-                            join user_wallets uw on uw.user_id = u.id
+                            left join user_wallets uw on uw.user_id = u.id
                             where u.email in (?)`;
         let [result, ignored]: any[] = await sql.query(query, [emails]);
         return result.length ? result : null;

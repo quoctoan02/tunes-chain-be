@@ -3,12 +3,13 @@ import {ErrorCode, logger, UserStatus, Utils} from "../utils";
 import {ethers} from "ethers";
 import crypto from "crypto";
 
+const table = 'users'
 export const UserModel = {
     get: async (userId: number) => {
         let query: string = `select u.*,
                                     uw.address
                              from users u
-                             join user_wallets uw on uw.user_id = u.id
+                             left join user_wallets uw on uw.user_id = u.id
                              where u.id = ?`;
         let [result, ignored]: any[] = await sql.query(query, [userId]);
         return result.length ? result[0] : null;
@@ -23,14 +24,17 @@ export const UserModel = {
         ]);
         return result.length ? result[0] : null;
     },
-    getByType: async (type: string, value: string) => {
+    getByTypeWithAddress: async (type: string, value: string) => {
         let query: string = `select *,
                                     uw.address
-                             from users
-                             join user_wallets uw on uw.user_id = u.id
+                             from users u
+                             left join user_wallets uw on uw.user_id = u.id
                              where LOWER(${type}) = ?`;
         let [result, ignored]: any[] = await sql.query(query, [value.trim().toLowerCase()]);
         return result.length ? result[0] : null;
+    },
+    getByType: async (type: string, value: string) => {
+        return doQuery.getByType(table, type, value);
     },
     getByEmail: async (type: string, value: string) => {
         let query: string = `select id, email, name
@@ -39,11 +43,11 @@ export const UserModel = {
         let [result, ignored]: any[] = await sql.query(query, [value.trim().toLowerCase()]);
         return result.length ? result[0] : null;
     },
-    getWithAddress: async (userId: number) => {
+    getByIdWithAddress: async (userId: number) => {
         let query: string = `select u.*,
                                     uw.address
                             from users u
-                            join user_wallets uw on uw.user_id = u.id
+                            left join user_wallets uw on uw.user_id = u.id
                             where u.id = ?`;
         let [result, ignored]: any[] = await sql.query(query, [userId]);
         return result.length ? result[0] : null;
@@ -52,7 +56,7 @@ export const UserModel = {
         let query: string = `select u.*,
                                     uw.address
                             from users u
-                            join user_wallets uw on uw.user_id = u.id
+                            left join user_wallets uw on uw.user_id = u.id
                             where lower(uw.address)  = ?`;
         let [result, ignored]: any[] = await sql.query(query, [address]);
         return result.length ? result[0] : null;
@@ -123,7 +127,6 @@ export const UserModel = {
             type: data.type
         };
         if (data.email) item.email = data.email.trim().toLowerCase();
-        if (data.mobile) item.mobile = data.mobile;
         if (data.name) item.name = data.name;
 
         let conn = await sql.getConnection();
