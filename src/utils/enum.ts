@@ -10,17 +10,23 @@ export enum ErrorCode {
     // User
     USER_INVALID = 1000,
     USER_EXISTS,
+    ARTIST_INVALID = 1000,
+    ARTIST_EXISTS,
     ADDRESS_EXISTS,
+    ARTIST_EMAIL_VERIFIED,
     USER_EMAIL_VERIFIED,
     EMAIL_EXISTS,
     PASSWORD_IS_INVALID,
     USER_NOT_FOUND,
+    ARTIST_NOT_FOUND,
     NONCE_INVALID,
     ADDRESS_INVALID,
     EMAIL_ACTIVATED,
     EMAIL_EXIST,
     USER_NOT_ACTIVE_YET,
     USER_BANNED,
+    ARTIST_NOT_ACTIVE_YET,
+    ARTIST_BANNED,
 
     // collection
     COLLECTION_INVALID = 4001,
@@ -94,6 +100,12 @@ export enum OtpWay {
 }
 
 export enum UserStatus {
+    ACTIVATED = 1,
+    DEACTIVATED,
+    BANNED,
+}
+
+export enum ArtistStatus {
     ACTIVATED = 1,
     DEACTIVATED,
     BANNED,

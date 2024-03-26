@@ -6,6 +6,7 @@ import {ErrorCode, HttpStatus, TokenType} from "./enum";
 import crypto from "crypto";
 import Joi from "joi";
 import {Redis} from "../databases";
+import _ from "lodash";
 
 const CAValidator = require('cryptocurrency-address-validator');
 
@@ -35,9 +36,24 @@ export interface iUserToken {
     type?: TokenType
 }
 
+export interface iArtistToken {
+    artistId: number,
+    timestamp?: number,
+    expiresIn?: string,
+    type?: TokenType
+}
+
 const getUserToken = (data: iUserToken) => {
     return jwt.sign({
         userId: data.userId,
+        timestamp: data.timestamp || Date.now(),
+        type: data.type
+    }, config.jwtSecret, {expiresIn: data.expiresIn || '7d'})
+}
+
+const getArtistToken = (data: iArtistToken) => {
+    return jwt.sign({
+        artistId: data.artistId,
         timestamp: data.timestamp || Date.now(),
         type: data.type
     }, config.jwtSecret, {expiresIn: data.expiresIn || '7d'})
@@ -116,10 +132,37 @@ const baseFilter = {
     reverse: Joi.boolean().default(true),
 }
 
-const pickBy = (object: any, predicate = (v: any) => v) => Object.entries(object).filter(([k, v]) => predicate(v)).reduce((acc, [k, v]) => ({
-    ...acc,
-    [k]: v
-}), {});
+const pickBy = (object: any,
+                predicate = (v: any) => v !== undefined): any =>
+    Object.entries(object).filter(([k, v]) => predicate(v))
+        .reduce((acc, [k, v]: [string, any]) => {
+            if (_.isPlainObject(v) && !_.isEmpty(v)) {
+                v = pickBy(v)
+            }
+            if (_.isArray(v) && !_.isEmpty(v)) {
+                v = v.filter((x: any) => predicate(x))
+            }
+            return {
+                ...acc,
+                [k]: typeof v === "object" ? JSON.stringify(v) : v
+            }
+        }, {});
+
+const pickByDb = (object: any,
+                  predicate = (v: any) => v !== undefined): any =>
+    Object.entries(object).filter(([k, v]) => predicate(v))
+        .reduce((acc, [k, v] : [string, any])  => {
+            if (_.isPlainObject(v) && !_.isEmpty(v)) {
+                v = pickBy(v)
+            }
+            if (_.isArray(v) && !_.isEmpty(v)) {
+                v = v.filter((x: any) => predicate(x))
+            }
+            return {
+                ...acc,
+                [k]: typeof v === "object" ? JSON.stringify(v) : v
+            }
+        }, {});
 
 const isEmpty = (object: any) => {
     return Object.keys(object).length === 0;
@@ -156,13 +199,31 @@ const notInProd = (res: any) => {
     }
 }
 
+const convertToEmail = (name: string): string => {
+    // Chuyển tất cả ký tự thành chữ thường
+    name = name.toLowerCase();
 
+    // Xóa dấu và khoảng trắng
+    name = name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, "");
+    name = name.replace(/[àáạảãâầấậẩẫăằắặẳẵ]/g, "a")
+        .replace(/[èéẹẻẽêềếệểễ]/g, "e")
+        .replace(/[ìíịỉĩ]/g, "i")
+        .replace(/[òóọỏõôồốộổỗơờớợởỡ]/g, "o")
+        .replace(/[ùúụủũưừứựửữ]/g, "u")
+        .replace(/[ỳýỵỷỹ]/g, "y")
+        .replace(/[đ]/g, "d");
+    // Thêm domain vào email
+    const email: string = name + "@yopmail.com";
+
+    return email;
+}
 export const Utils = {
     hashPassword,
     comparePassword,
     passwordMethod,
     trimText,
     getUserToken,
+    getArtistToken,
     verifyToken,
     arrayToMap,
     normalizeNumber,
@@ -178,5 +239,7 @@ export const Utils = {
     pickBy,
     preventSpam,
     notInProd,
-    sleep
+    sleep,
+    pickByDb,
+    convertToEmail
 }

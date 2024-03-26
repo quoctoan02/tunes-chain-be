@@ -1,9 +1,12 @@
 import {UserModel} from "../models";
-import {ErrorCode, logger, OtpType, TokenType, UserStatus, Utils} from "../utils";
+import {ArtistStatus, ErrorCode, logger, OtpType, TokenType, UserStatus, Utils} from "../utils";
 import {doQuery, Redis, sql} from "../databases";
 import {OTPController} from "./otp.controller";
 import {recoverPersonalSignature} from "eth-sig-util";
 import {config} from "../config";
+import {ArtistModel} from "../models/artist.model";
+import {ethers} from "ethers";
+import crypto from "crypto";
 
 
 export class AuthController {
@@ -19,7 +22,7 @@ export class AuthController {
         });
         if (recoveredAddr.toLowerCase() != address.toLowerCase()) throw ErrorCode.ADDRESS_INVALID;
 
-        let userInfo = await UserModel.getByAddress(address);
+        let userInfo = await UserModel.getByType("address", address);
         if (!userInfo) {
             const user_data: any = {
                 address: address.toLowerCase(),
@@ -30,7 +33,11 @@ export class AuthController {
             //     genRefCode = Utils.generateString(10);
             //     _user = await UserModel.getByType("referral_code", genRefCode);
             // }
-            const user_id = await UserModel.signup(user_data);
+            const user_id = await UserModel.create({
+                ...user_data,
+                //   referral_code,
+                // ref_code: genRefCode
+            });
             userInfo = await UserModel.get(user_id);
         }
         if (userInfo.status != UserStatus.ACTIVATED) throw ErrorCode.USER_INVALID;
@@ -42,35 +49,89 @@ export class AuthController {
 
         return {
             token: auth_token,
-            user_info: await UserModel.getByIdWithAddress(userInfo.id),
+            user_info: userInfo,
             expiredAt: Date.now() + 12 * 60 * 60 * 1000,
         };
+
     }
 
+    public static async emailRegister(data: any) {
+        const artist: any = await ArtistModel.getByEmail('email', data.email);
+        if (artist)
+            throw ErrorCode.ARTIST_EXISTS;
+
+        // check code
+        // await OTPController.verify_otp(OtpType.VERIFY_EMAIL, data.email, data.code, OtpWay.EMAIL);
+
+        // if ('123456' != data.code)
+        //     throw ErrorCode.OTP_INVALID_OR_EXPIRED;
+
+        let conn = await sql.getConnection();
+        try {
+            await conn.query("START TRANSACTION");
+            logger.trace("start transaction");
+
+            let artist_id = await ArtistModel.create({
+                name: data.name,
+                avatar: data.avatar,
+                genres: data.genres,
+                background: data.background,
+                email: data.email
+            }, conn)
+            // create password
+            await ArtistModel.insertUpdatePassword({
+                artist_id: artist_id,
+                password_hash: await Utils.hashPassword(data.password)
+            }, conn);
+
+            //create wallet
+            const _wallet = new ethers.Wallet('0x' + crypto.randomBytes(32).toString('hex'));
+
+            // create wallet
+            await doQuery.insertRow('artist_wallets', {
+                artist_id: artist_id,
+                address: _wallet.address,
+                private_key: _wallet.privateKey
+            }, conn);
+
+            await conn.query("COMMIT");
+            logger.trace("transaction COMMIT");
+            conn.release();
+            logger.trace("transaction release");
+
+            return artist_id
+        } catch (e) {
+            logger.error(e);
+            await conn.query("ROLLBACK");
+            conn.release();
+            throw ErrorCode.UNKNOWN_ERROR;
+        }
+    };
+
     public static async loginEmail(email: string, password: string) {
-        const userInfo = await UserModel.getByType("email", email);
-        if (!userInfo) throw ErrorCode.USER_NOT_FOUND
-        if (userInfo.status === UserStatus.DEACTIVATED)
+        const artistInfo = await ArtistModel.getByType("email", email);
+        if (!artistInfo) throw ErrorCode.USER_NOT_FOUND
+        if (artistInfo.status === ArtistStatus.DEACTIVATED)
             throw {
                 error_code: ErrorCode.USER_NOT_ACTIVE_YET,
-                data: {email: userInfo.email.slice(0, 2) + '***'}
+                data: {email: artistInfo.email.slice(0, 2) + '***'}
             };
-        if (userInfo.status === UserStatus.BANNED)
+        if (artistInfo.status === ArtistStatus.BANNED)
             throw ErrorCode.USER_BANNED;
-        const user_auth = await UserModel.getUserAuth(userInfo.id);
-        const isValidPw = await Utils.comparePassword(password, user_auth.password_hash)
+        const artist_auth = await ArtistModel.getArtistAuth(artistInfo.id);
+        const isValidPw = await Utils.comparePassword(password, artist_auth.password_hash)
         if (!isValidPw) throw ErrorCode.PASSWORD_IS_INVALID
 
 
         const timestamp = Date.now();
-        const auth_token = Utils.getUserToken({userId: userInfo.id, timestamp, type: TokenType.LOGIN});
-        // await Redis.defaultCli.publish(`login_event`, JSON.stringify({ userId: userInfo.id, timestamp }));
+        const auth_token = Utils.getArtistToken({artistId: artistInfo.id, timestamp, type: TokenType.LOGIN});
+        // await Redis.defaultCli.publish(`login_event`, JSON.stringify({ artistId: artistInfo.id, timestamp }));
 
 
         return {
             token: auth_token,
-            user_info: await UserModel.getByIdWithAddress(userInfo.id),
-            //user_info: await UserController.get(userInfo.id),
+            artist_info: await ArtistModel.getByIdWithAddress(artistInfo.id),
+            //artist_info: await ArtistController.get(artistInfo.id),
             expiredAt: Date.now() + 7 * 24 * 60 * 60 * 1000,
         };
     };
@@ -172,56 +233,6 @@ export class AuthController {
         }
     };
 
-    public static async emailRegister(data: any) {
-        const user = await UserModel.getExistedPassword('email', data.email);
-        if (user && user.password_hash)
-            throw ErrorCode.USER_EXISTS;
-
-        // check code
-        // await OTPController.verify_otp(OtpType.VERIFY_EMAIL, data.email, data.code, OtpWay.EMAIL);
-
-        // if ('123456' != data.code)
-        //     throw ErrorCode.OTP_INVALID_OR_EXPIRED;
-
-        if (user && !user.password_hash) {
-            let conn = await sql.getConnection();
-            try {
-                await conn.query("START TRANSACTION");
-                logger.trace("start transaction");
-
-                await UserModel.update({
-                    user_id: user.id,
-                    name: data.email.split('@')[0]
-                }, conn);
-
-                // create password
-                await UserModel.insertUpdatePassword({
-                    user_id: user.id,
-                    password_hash: await Utils.hashPassword(data.password)
-                }, conn);
-
-
-                await conn.query("COMMIT");
-                logger.trace("transaction COMMIT");
-                conn.release();
-                logger.trace("transaction release");
-            } catch (e) {
-                logger.error(e);
-                await conn.query("ROLLBACK");
-                conn.release();
-                throw ErrorCode.UNKNOWN_ERROR;
-            }
-
-            return user.id;
-        }
-        const userInfo = {
-            email: data.email,
-            password: data.password,
-            type: data.type,
-            name: data.name
-        }
-        return await UserModel.signup(userInfo);
-    };
 
     public static async testLogin(address: string, referral_code: string) {
         let userInfo = await UserModel.getByAddress(address);
