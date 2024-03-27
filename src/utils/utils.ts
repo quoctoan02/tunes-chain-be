@@ -19,7 +19,7 @@ const passwordMethod = (val: any, helpers: any) => {
     const valid = schema.validate(val)
     if (!valid) {
         return helpers.message(
-            'Password must have 8-50 characters with no spaces'
+            'Password must have 6-50 characters with no spaces'
         )
     }
     return val

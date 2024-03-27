@@ -109,15 +109,15 @@ const getVerifyEmailCode = async (req: Request, res: Response) => {
     await AuthController.getVerifyCode(email);
     return routeResSuccess(res, {});
 }
-const checkExistedAccount = async (req: Request, res: Response) => {
-    const { email} = await Joi.object()
-        .keys({
-            email: Joi.string().email().required(),
-        })
-        .validateAsync({...req.query, ...req.params, ...req.body})
-
-    return routeResSuccess(res,  await AuthController.checkExistedAccount({email}))
-}
+// const checkExistedAccount = async (req: Request, res: Response) => {
+//     const { email} = await Joi.object()
+//         .keys({
+//             email: Joi.string().email().required(),
+//         })
+//         .validateAsync({...req.query, ...req.params, ...req.body})
+//
+//     return routeResSuccess(res,  await AuthController.checkExistedAccount({email}))
+// }
 const verify_email = async (req: Request, res: Response) => {
     const {email, code} = await Joi.object()
         .keys({
@@ -196,8 +196,8 @@ export const AuthRoute = (app: Application) => {
     app.use("/auth", authRouter)
     // Children
     authRouter.post("/login", hpr(login));
-    authRouter.post("/artist/login", hpr(loginEmail));
-    authRouter.post("/artist/signup", hpr(signup));
+    authRouter.post("/login-email", hpr(loginEmail));
+    authRouter.post("/signup", hpr(signup));
 
     authRouter.get("/get-nonce", hpr(get_nonce))
     authRouter.post("/get-verify-email-code", hpr(getVerifyEmailCode));

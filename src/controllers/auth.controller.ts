@@ -33,17 +33,13 @@ export class AuthController {
             //     genRefCode = Utils.generateString(10);
             //     _user = await UserModel.getByType("referral_code", genRefCode);
             // }
-            const user_id = await UserModel.create({
-                ...user_data,
-                //   referral_code,
-                // ref_code: genRefCode
-            });
+            const user_id = await UserModel.create({ ...user_data });
             userInfo = await UserModel.get(user_id);
         }
         if (userInfo.status != UserStatus.ACTIVATED) throw ErrorCode.USER_INVALID;
 
         const timestamp = Date.now();
-        const auth_token = Utils.getUserToken({userId: userInfo.id, timestamp, type: TokenType.LOGIN});
+        const auth_token = Utils.getUserToken({ userId: userInfo.id, timestamp, type: TokenType.LOGIN });
 
         await Redis.defaultCli.hdel("nonce", address.toLowerCase());
 
@@ -52,8 +48,9 @@ export class AuthController {
             user_info: userInfo,
             expiredAt: Date.now() + 12 * 60 * 60 * 1000,
         };
-
     }
+
+
 
     public static async emailRegister(data: any) {
         const artist: any = await ArtistModel.getByEmail('email', data.email);
@@ -223,19 +220,19 @@ export class AuthController {
         return Utils.getUserToken({userId: id, timestamp, type: TokenType.LOGIN});
     }
 
-    public static async checkExistedAccount(data: any) {
-        const user = await UserModel.getExistedPassword('email', data.email);
-        if (user && user.password_hash) return {
-            status: true
-        }
-        return {
-            status: false
-        }
-    };
+    // public static async checkExistedAccount(data: any) {
+    //     const user = await UserModel.getExistedPassword('email', data.email);
+    //     if (user && user.password_hash) return {
+    //         status: true
+    //     }
+    //     return {
+    //         status: false
+    //     }
+    // };
 
 
     public static async testLogin(address: string, referral_code: string) {
-        let userInfo = await UserModel.getByAddress(address);
+        let userInfo = await UserModel.getByType("address", address);
         if (!userInfo) {
             const user_data: any = {
                 address: address.toLowerCase(),
@@ -246,13 +243,13 @@ export class AuthController {
                 genRefCode = Utils.generateString(10);
                 _user = await UserModel.getByType("referral_code", genRefCode);
             }
-            const user_id = await UserModel.create({...user_data, referral_code, ref_code: genRefCode});
+            const user_id = await UserModel.create({ ...user_data, referral_code, ref_code: genRefCode });
             userInfo = await UserModel.get(user_id);
         }
         if (userInfo.status != UserStatus.ACTIVATED) throw ErrorCode.USER_INVALID;
 
         const timestamp = Date.now();
-        const auth_token = Utils.getUserToken({userId: userInfo.id, timestamp, type: TokenType.LOGIN});
+        const auth_token = Utils.getUserToken({ userId: userInfo.id, timestamp, type: TokenType.LOGIN });
 
         await Redis.defaultCli.hdel("nonce", address.toLowerCase());
 
@@ -262,4 +259,5 @@ export class AuthController {
             expiredAt: Date.now() + 12 * 60 * 60 * 1000,
         };
     }
+
 }
